@@ -14,18 +14,7 @@ export const metadata: Metadata = {
 	description:
 		"Discover, create, and attend events seamlessly with Gather – Your ultimate platform for social gatherings. Explore a vibrant community, create memorable events, and effortlessly book tickets. Join the social revolution with Gather.",
 	icons: {
-		icon: [
-			{
-				media: "(prefers-color-scheme: light)",
-				url: "/assets/icons/fav-logo.svg",
-				href: "/assets/icons/fav-logo.svg",
-			},
-			{
-				media: "(prefers-color-scheme: dark)",
-				url: "/assets/icons/fav-logo-grey.svg",
-				href: "/assets/icons/fav-logo-grey.svg",
-			},
-		],
+		icon: "/assets/icons/fav-logo.svg",
 	},
 };
 
