@@ -131,6 +131,10 @@ export type GetOrdersByUserParams = {
 	page: string | number | null;
 };
 
+export type GetAllOrdersByUserParams = {
+	userId: string | null;
+};
+
 // ====== URL QUERY PARAMS
 export type UrlQueryParams = {
 	params: string;

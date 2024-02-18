@@ -4,8 +4,11 @@ import {
 	getEventById,
 	getRelatedEventsByCategory,
 } from "@/lib/actions/event.actions";
+import { getAllOrdersByUser } from "@/lib/actions/order.actions";
+import { IOrder } from "@/lib/database/models/order.model";
 import { formatDateTime } from "@/lib/utils";
 import { SearchParamProps } from "@/types";
+import { auth } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -13,19 +16,26 @@ export default async function EventDetailsPage({
 	params: { id },
 	searchParams,
 }: SearchParamProps) {
+	const { sessionClaims } = auth();
+	const userId = sessionClaims?.userId as string;
+
 	const event = await getEventById(id);
 
-	// todo: page
 	const relatedEvents = await getRelatedEventsByCategory({
 		categoryId: event.category._id,
 		eventId: event._id,
-		page: 1,
+		page: searchParams.page as string,
 	});
 
 	const eventStartDate = formatDateTime(event.startDateTime).dateOnly;
 	const eventStartTime = formatDateTime(event.startDateTime).timeOnly;
 	const eventEndDate = formatDateTime(event.endDateTime).dateOnly;
 	const eventEndTime = formatDateTime(event.endDateTime).timeOnly;
+
+	const eventsBoughtByUser = await getAllOrdersByUser({ userId });
+	const hasUserBoughtThisEvent = eventsBoughtByUser.some(
+		(o: IOrder) => o.event === event._id
+	);
 
 	return (
 		<>
@@ -63,7 +73,13 @@ export default async function EventDetailsPage({
 							</div>
 						</div>
 
-						<CheckoutButton event={event} />
+						{hasUserBoughtThisEvent ? (
+							<p className="p-medium-16 lg:p-regular-18 text-primary-500">
+								Ticket already purchased
+							</p>
+						) : (
+							<CheckoutButton event={event} />
+						)}
 
 						<div className="flex flex-col gap-5">
 							<div className="flex gap-2 md:gap-3">
@@ -132,9 +148,8 @@ export default async function EventDetailsPage({
 					emptyTitle="No similar events found"
 					emptySubtext="Come back later"
 					collectionType="All_Events"
-					limit={3}
-					page="1"
-					// todo: page
+					limit={4}
+					page={searchParams.page as string}
 					totalPages={relatedEvents?.totalPages}
 				/>
 			</section>

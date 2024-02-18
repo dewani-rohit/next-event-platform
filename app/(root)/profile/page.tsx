@@ -1,18 +1,22 @@
-// todo: search params
-
 import Collection from "@/components/shared/Collection";
 import { Button } from "@/components/ui/button";
 import { getEventsByUser } from "@/lib/actions/event.actions";
+import { getOrdersByUser } from "@/lib/actions/order.actions";
+import { IOrder } from "@/lib/database/models/order.model";
+import { SearchParamProps } from "@/types";
 import { auth } from "@clerk/nextjs";
 import Link from "next/link";
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ searchParams }: SearchParamProps) {
 	const { sessionClaims } = auth();
 	const userId = sessionClaims?.userId as string;
 
-	// todo: search params
-	const eventsPage = 1;
+	const ordersPage = Number(searchParams?.ordersPage) || 1;
+	const eventsPage = Number(searchParams?.eventsPage) || 1;
 
+	const orders = await getOrdersByUser({ userId, page: ordersPage });
+
+	const orderedEvents = orders?.data.map((order: IOrder) => order.event) || [];
 	const organizedEvents = await getEventsByUser({ userId, page: eventsPage });
 
 	return (
@@ -33,14 +37,14 @@ export default async function ProfilePage() {
 
 			<section className="wrapper my-8">
 				<Collection
-					data={[]}
+					data={orderedEvents}
 					emptyTitle="No event tickets purchased yet"
 					emptySubtext="No worries - plenty of exciting events to explore!"
 					collectionType="My_Tickets"
-					limit={3}
-					page="1"
+					limit={4}
+					page={ordersPage}
 					urlParamName="ordersPage"
-					totalPages={1}
+					totalPages={orders?.totalPages}
 				/>
 			</section>
 
@@ -64,9 +68,9 @@ export default async function ProfilePage() {
 					emptyTitle="No event created yet"
 					emptySubtext="Create an event now!"
 					collectionType="Events_Organized"
-					limit={3}
+					limit={4}
 					page={eventsPage}
-					urlParamName="ordersPage"
+					urlParamName="eventsPage"
 					totalPages={organizedEvents?.totalPages}
 				/>
 			</section>
